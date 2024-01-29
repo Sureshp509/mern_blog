@@ -1,12 +1,13 @@
+const { errorHandler } = require("../utils/error");
 const User=require("../models/user.model");
 const bcryptjs=require('bcryptjs');
 
-const registerUser=async(req,res)=>{
+const registerUser=async(req,res,next)=>{
 try{
     const {username,email,password}=req.body;
     const hashedPass=bcryptjs.hashSync(password,10);
     if (!username || !email || !password) {
-        return res.status(400).json({ message: 'Username, email, and password are required' });
+        next(errorHandler(400,"All fields are required"))
       }
     const existingUser=await User.findOne({$or:[{username},{email}]});
     if(existingUser){
@@ -21,8 +22,7 @@ try{
     }
 } 
 catch(error){
-    console.error("Unable to register",error);
-    res.status(500).json({message:"Internal Servor Error"})
+   next(error)
 }
 }
 
